@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    options {
+    // This is required if you want to clean before build
+    skipDefaultCheckout(true)
+    }
+    stages {
+        stage('Get from git') {
+            steps{
+                cleanWs() //cleans current workspace
+                dir('RattrapageMSPR'){
+                    git 'https://github.com/Anatael-tech/RattrapageMSPR.git'
+                }
+                dir('RattrapageMSPR/testmspr2-main/src/main/resources'){
+                    git 'https://github.com/Anatael-tech/RattrapageMSPR/testmspr2-main'
+                }
+            }
+        }
+        stage('Build with mvn') {
+            steps{
+                dir('RattrapageMSPR') {
+                //Build with mvn using pom.xml in current folder
+                //with cleaning previous compile files and jar archive generation
+                    sh 'mvn -B clean package'
+                }
+            }
+        }
+        stage('run java app'){
+            steps{
+                dir('RattrapageMSPR/testmspr2-main/target'){
+                sh 'mkdir web/'
+                //I run this archive using sh java 'java -jar-GENERATEDjar.jar'
+                sh 'java -jar HTMLGenerator-1.0-SNAPSHOT-jar-with-dependencies.jar'
+                }
+            }
+        }
+        stage ('Deploy') {
+            steps{
+                dir('RattrapageMSPR/testmspr2-main/target'){
+                    //I send over ssh the agents files generated with the app to the webserver
+                    sh 'scp -r web/ sshjenkins@msprb3.ddns.net:docker-apache-demo/src'
+                }
+            }
+        }
+    }
+}
