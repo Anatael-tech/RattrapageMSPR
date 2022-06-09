@@ -12,10 +12,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author milla
- */
 public class Program {
     
     static void HtmlList( ArrayList ListeEquipement){
